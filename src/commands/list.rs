@@ -1,18 +1,14 @@
 use std::path::Path;
 
-use crate::{
-    MyResult,
-    cli::TimePeriod,
-    db::{self, list_all_transactions},
-    models::Transaction,
-};
+use crate::{MyResult, cli::TimePeriod, db::Database, models::Transaction};
 
 pub fn list(time_period: Option<TimePeriod>) -> MyResult<()> {
+    let mut db = Database::new(Path::new("cashtrack.db"))?;
+
     match time_period.unwrap_or(TimePeriod::Weekly) {
         TimePeriod::Weekly => {
             println!("Weekly");
-            let mut conn = db::open(Path::new("cashtrack.db"))?;
-            let transactions = list_all_transactions(&mut conn)?;
+            let transactions = db.list_all_transactions()?;
             print_transactions(transactions);
         }
         TimePeriod::Fortnightly => {

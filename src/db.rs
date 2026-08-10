@@ -1,16 +1,20 @@
 use std::{path::Path, str::FromStr};
 
-use chrono::NaiveDate;
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, Row, params};
 use rust_decimal::Decimal;
 
 use crate::{MyResult, models::Transaction};
 
-pub fn open(path: &Path) -> MyResult<Connection> {
-    let conn = Connection::open(path)?;
+pub struct Database {
+    conn: Connection,
+}
 
-    conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS transactions (
+impl Database {
+    pub fn new(path: &Path) -> MyResult<Database> {
+        let conn = Connection::open(path)?;
+
+        conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS transactions (
           id           INTEGER PRIMARY KEY AUTOINCREMENT,
           date         TEXT NOT NULL,
           amount       TEXT NOT NULL,
@@ -19,51 +23,68 @@ pub fn open(path: &Path) -> MyResult<Connection> {
           bank         TEXT NOT NULL,
           UNIQUE(date, amount, description, bank)
         );",
-    )?;
-
-    Ok(conn)
-}
-
-// Duplicates are skipped
-pub fn insert_transactions(conn: &mut Connection, transactions: &[Transaction]) -> MyResult<usize> {
-    let tx = conn.transaction()?;
-    let mut inserted = 0;
-
-    {
-        let mut stmt = tx.prepare(
-            "INSERT OR IGNORE INTO transactions
-                (date, amount, category, description, bank)
-            VALUES (?1, ?2, ?3, ?4, ?5)",
         )?;
 
-        for t in transactions {
-            inserted += stmt.execute(params![
-                t.date,
-                t.amount.to_string(),
-                t.category,
-                t.description,
-                t.bank
-            ])?;
-        }
+        Ok(Database { conn })
     }
 
-    tx.commit()?;
+    pub fn insert_transactions(&mut self, transactions: &[Transaction]) -> MyResult<usize> {
+        let tx = self.conn.transaction()?;
+        let mut inserted = 0;
 
-    Ok(inserted)
-}
+        {
+            let mut stmt = tx.prepare(
+                "INSERT OR IGNORE INTO transactions
+                (date, amount, category, description, bank)
+            VALUES (?1, ?2, ?3, ?4, ?5)",
+            )?;
 
-pub fn list_transactions(
-    conn: &mut Connection,
-    from: NaiveDate,
-    to: NaiveDate,
-) -> MyResult<Vec<Transaction>> {
-    let mut stmt = conn.prepare(
-        "SELECT id, date, amount, category, description, bank
+            for t in transactions {
+                inserted += stmt.execute(params![
+                    t.date,
+                    t.amount.to_string(),
+                    t.category,
+                    t.description,
+                    t.bank
+                ])?;
+            }
+        }
+
+        tx.commit()?;
+
+        Ok(inserted)
+    }
+
+    // pub fn list_transactions(
+    //     conn: &mut Connection,
+    //     from: NaiveDate,
+    //     to: NaiveDate,
+    // ) -> MyResult<Vec<Transaction>> {
+    //     let mut stmt = conn.prepare(
+    //         "SELECT id, date, amount, category, description, bank
+    //     FROM transactions
+    //     WHERE date >= ?1 AND date <= ?2
+    //     ORDER BY date, id",
+    //     )?;
+
+    //     let rows = stmt.query_map(params![from, to], |row| Self::parse_transaction(row))?;
+
+    //     rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    // }
+
+    pub fn list_all_transactions(&mut self) -> MyResult<Vec<Transaction>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, date, amount, category, description, bank
         FROM transactions
-        WHERE date >= ?1 AND date <= ?2
         ORDER BY date, id",
-    )?;
-    let rows = stmt.query_map(params![from, to], |row| {
+        )?;
+
+        let rows = stmt.query_map(params![], |row| Self::parse_transaction(row))?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    }
+
+    fn parse_transaction(row: &Row) -> rusqlite::Result<Transaction> {
         let amount: String = row.get(2)?;
         let amount = Decimal::from_str(&amount).map_err(|err| {
             rusqlite::Error::FromSqlConversionFailure(2, rusqlite::types::Type::Text, Box::new(err))
@@ -77,30 +98,5 @@ pub fn list_transactions(
             description: row.get(4)?,
             bank: row.get(5)?,
         })
-    })?;
-    rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
-}
-
-pub fn list_all_transactions(conn: &mut Connection) -> MyResult<Vec<Transaction>> {
-    let mut stmt = conn.prepare(
-        "SELECT id, date, amount, category, description, bank
-        FROM transactions
-        ORDER BY date, id",
-    )?;
-    let rows = stmt.query_map(params![], |row| {
-        let amount: String = row.get(2)?;
-        let amount = Decimal::from_str(&amount).map_err(|err| {
-            rusqlite::Error::FromSqlConversionFailure(2, rusqlite::types::Type::Text, Box::new(err))
-        })?;
-
-        Ok(Transaction {
-            id: row.get(0)?,
-            date: row.get(1)?,
-            amount,
-            category: row.get(3)?,
-            description: row.get(4)?,
-            bank: row.get(5)?,
-        })
-    })?;
-    rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    }
 }

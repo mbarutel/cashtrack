@@ -1,7 +1,8 @@
 use std::{fs, path::Path, str::FromStr};
 
 use crate::{
-    MyResult, db,
+    MyResult,
+    db::Database,
     models::{CategoryRule, Config, Transaction},
 };
 
@@ -9,9 +10,8 @@ pub fn import(path: &Path) -> MyResult<()> {
     let config = read_categories(Path::new("./categories.yaml"))?;
     let transactions = read_transactions(path, &config.rules)?;
 
-    let mut conn = db::open(Path::new("cashtrack.db"))?;
-
-    db::insert_transactions(&mut conn, &transactions)?;
+    let mut db = Database::new(Path::new("cashtrack.db"))?;
+    db.insert_transactions(&transactions)?;
 
     print_transactions(transactions);
 
