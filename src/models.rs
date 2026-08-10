@@ -1,10 +1,11 @@
 use chrono::NaiveDate;
+use rust_decimal::Decimal;
 use serde::Deserialize;
 
 pub struct Transaction {
     pub id: i64,
     pub date: NaiveDate,
-    pub amount: f64,
+    pub amount: Decimal,
     pub category: String,
     pub description: String,
     pub bank: String,
@@ -13,7 +14,7 @@ pub struct Transaction {
 #[derive(Debug, Deserialize)]
 pub struct CreateTransaction {
     pub date: String,
-    pub amount: f64,
+    pub amount: Decimal,
     pub description: String,
 }
 

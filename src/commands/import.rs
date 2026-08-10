@@ -1,15 +1,17 @@
-use std::{fs, path::Path};
-
-use chrono::{Local, NaiveDate};
+use std::{fs, path::Path, str::FromStr};
 
 use crate::{
-    MyResult,
+    MyResult, db,
     models::{CategoryRule, Config, Transaction},
 };
 
 pub fn import(path: &Path) -> MyResult<()> {
     let config = read_categories(Path::new("./categories.yaml"))?;
     let transactions = read_transactions(path, &config.rules)?;
+
+    let mut conn = db::open(Path::new("cashtrack.db"))?;
+
+    db::insert_transactions(&mut conn, &transactions)?;
 
     print_transactions(transactions);
 
@@ -52,9 +54,10 @@ fn read_transactions(path: &Path, rules: &Vec<CategoryRule>) -> MyResult<Vec<Tra
     let mut transactions: Vec<Transaction> = Vec::new();
 
     for result in reader.deserialize() {
-        let (date, amount, description): (String, f64, String) = result?;
+        let (date, amount, description): (String, String, String) = result?;
         let date = chrono::NaiveDate::parse_from_str(&date, "%d/%m/%Y")?;
         let category = categorizer(rules, &description);
+        let amount = rust_decimal::Decimal::from_str(&amount)?;
 
         transactions.push(Transaction {
             id: 0,
