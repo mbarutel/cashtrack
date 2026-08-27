@@ -1,60 +1,82 @@
+use std::{
+    fmt::{Display, write},
+    str::FromStr,
+};
+
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
-use serde::Deserialize;
+
+// These properties should be private
+// because once they are set, they should never
+// be updated afterwards.
+
+pub struct TransactionCsvRow {
+    pub date: String,
+    pub amount: String,
+    pub description: String,
+}
+
+pub struct TransactionDbRow {
+    pub id: i64,
+    pub date: String,
+    pub amount: String,
+    pub category: String,
+    pub description: String,
+    pub bank: String,
+}
+
+#[derive(Debug)]
+pub enum Direction {
+    Inflow,
+    Outflow,
+    Noflow,
+}
 
 pub struct Transaction {
-    pub id: i64,
     pub date: NaiveDate,
+    pub direction: Direction,
     pub amount: Decimal,
     pub category: String,
     pub description: String,
     pub bank: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct CreateTransaction {
-    pub date: String,
-    pub amount: Decimal,
-    pub description: String,
+impl Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.pad(match self {
+            Direction::Inflow => "Inflow",
+            Direction::Outflow => "Outflow",
+            Direction::Noflow => "Noflow",
+        })
+    }
 }
 
-#[derive(Debug, Deserialize)]
-pub struct Config {
-    pub rules: Vec<CategoryRule>,
-}
+impl TryFrom<TransactionDbRow> for Transaction {
+    type Error = String;
 
-#[derive(Debug, Deserialize)]
-pub struct CategoryRule {
-    pub subcategory: String,
-    pub keywords: Vec<String>,
-    pub priority: u32,
-}
-
-// impl TryFrom<CreateTransaction> for Transaction {
-//     fn from(value: CreateTransaction) -> Self {
-//         Self {
-//             id: 0,
-//             date: todo!(),
-//             amount: todo!(),
-//             category: todo!(),
-//             description: todo!(),
-//             bank: todo!(),
-//         }
-//     }
-// }
-impl TryFrom<CreateTransaction> for Transaction {
-    type Error = Box<dyn std::error::Error>;
-
-    fn try_from(value: CreateTransaction) -> Result<Self, Self::Error> {
-        let date = chrono::NaiveDate::parse_from_str(&value.date, "%d/%m/%Y")?;
+    fn try_from(value: TransactionDbRow) -> Result<Self, Self::Error> {
+        let amount = rust_decimal::Decimal::from_str(&value.amount).map_err(|e| format!("{e}"))?;
+        let date = NaiveDate::from_str(&value.date).map_err(|e| format!("{e}"))?;
 
         Ok(Self {
-            id: 0,
             date,
-            amount: value.amount,
-            category: "Placeholder".to_string(),
+            direction: Direction::from(amount),
+            amount: amount.abs(),
+            category: value.category,
             description: value.description,
-            bank: "Placeholder".to_string(),
+            bank: value.bank,
         })
+    }
+}
+
+impl From<Decimal> for Direction {
+    fn from(value: Decimal) -> Self {
+        if value == Decimal::ZERO {
+            Direction::Noflow
+        } else if value > Decimal::ZERO {
+            Direction::Inflow
+        } else {
+            Direction::Outflow
+        }
     }
 }

@@ -1,6 +1,6 @@
-use crate::{MyResult, cli::TimePeriod};
+use crate::{MyResult, State, cli::TimePeriod};
 
-pub fn report(time_period: Option<TimePeriod>) -> MyResult<()> {
+pub fn report(_state: &State, time_period: Option<TimePeriod>) -> MyResult<()> {
     match time_period.unwrap_or(TimePeriod::Weekly) {
         TimePeriod::Weekly => {
             println!("Weekly")

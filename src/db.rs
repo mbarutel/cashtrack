@@ -1,16 +1,16 @@
-use std::{path::Path, str::FromStr};
-
+use crate::{
+    MyResult,
+    models::{Transaction, TransactionDbRow},
+};
+use chrono::NaiveDate;
 use rusqlite::{Connection, Row, params};
-use rust_decimal::Decimal;
-
-use crate::{MyResult, models::Transaction};
 
 pub struct Database {
     conn: Connection,
 }
 
 impl Database {
-    pub fn new(path: &Path) -> MyResult<Database> {
+    pub fn new(path: &str) -> MyResult<Database> {
         let conn = Connection::open(path)?;
 
         conn.execute_batch(
@@ -55,48 +55,68 @@ impl Database {
         Ok(inserted)
     }
 
-    // pub fn list_transactions(
-    //     conn: &mut Connection,
-    //     from: NaiveDate,
-    //     to: NaiveDate,
-    // ) -> MyResult<Vec<Transaction>> {
-    //     let mut stmt = conn.prepare(
-    //         "SELECT id, date, amount, category, description, bank
-    //     FROM transactions
-    //     WHERE date >= ?1 AND date <= ?2
-    //     ORDER BY date, id",
-    //     )?;
-
-    //     let rows = stmt.query_map(params![from, to], |row| Self::parse_transaction(row))?;
-
-    //     rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
-    // }
-
-    pub fn list_all_transactions(&mut self) -> MyResult<Vec<Transaction>> {
-        let mut stmt = self.conn.prepare(
+    pub fn list_transactions(
+        conn: &mut Connection,
+        from: NaiveDate,
+        to: NaiveDate,
+    ) -> MyResult<Vec<Transaction>> {
+        let mut stmt = conn.prepare(
             "SELECT id, date, amount, category, description, bank
         FROM transactions
+        WHERE date >= ?1 AND date <= ?2
         ORDER BY date, id",
         )?;
 
-        let rows = stmt.query_map(params![], |row| Self::parse_transaction(row))?;
+        let rows = stmt.query_map(params![from, to], |row| TransactionDbRow::try_from(row))?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+        let mut transactions = Vec::new();
+
+        for row in rows {
+            transactions.push(Transaction::try_from(row?)?);
+        }
+
+        Ok(transactions)
     }
 
-    fn parse_transaction(row: &Row) -> rusqlite::Result<Transaction> {
-        let amount: String = row.get(2)?;
-        let amount = Decimal::from_str(&amount).map_err(|err| {
-            rusqlite::Error::FromSqlConversionFailure(2, rusqlite::types::Type::Text, Box::new(err))
-        })?;
+    pub fn list_all_transactions(&mut self) -> MyResult<Vec<Transaction>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT
+                id,
+                date,
+                amount,
+                category,
+                description,
+                bank
+            FROM
+                transactions
+            ORDER BY
+                 date,
+                 id",
+        )?;
 
-        Ok(Transaction {
-            id: row.get(0)?,
-            date: row.get(1)?,
-            amount,
-            category: row.get(3)?,
-            description: row.get(4)?,
-            bank: row.get(5)?,
+        let rows = stmt.query_map([], |row| TransactionDbRow::try_from(row))?;
+
+        let mut transactions = Vec::new();
+
+        for row in rows {
+            transactions.push(Transaction::try_from(row?)?);
+        }
+
+        Ok(transactions)
+    }
+}
+
+impl TryFrom<&Row<'_>> for TransactionDbRow {
+    type Error = rusqlite::Error;
+
+    fn try_from(value: &Row) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: value.get(0)?,
+            date: value.get(1)?,
+            amount: value.get(2)?,
+            category: value.get(3)?,
+            description: value.get(4)?,
+            bank: value.get(5)?,
         })
     }
 }

@@ -20,7 +20,7 @@ pub enum Command {
     },
     Import {
         #[arg(short, long)]
-        path: PathBuf,
+        csv_path: PathBuf,
     },
 }
 
