@@ -1,0 +1,330 @@
+rules:
+  # Income Categories (High Priority)
+  # These need to be checked first to avoid false matches with generic terms
+  - subcategory: "Mike Contribute"
+    keywords:
+      - "michel"
+      - "mike"
+      - "to joint"
+    priority: 100
+
+  - subcategory: "Anastasia Contribute"
+    keywords:
+      - "from xx1300"
+      - "from xx9058"
+    priority: 100
+
+  - subcategory: "Anastasia Transfer"
+    keywords:
+      - "to xx1300"
+      - "to xx9058"
+    priority: 100
+
+  - subcategory: "Scott Transfer"
+    keywords:
+      - "scott whan"
+    priority: 100
+
+  - subcategory: "Money Transfer"
+    keywords:
+      - "transfer"
+    priority: 60
+
+  - subcategory: "Return"
+    keywords:
+      - "return"
+    priority: 90
+
+  # Specific Expenses (High Priority)
+  # Fixed recurring expenses that should be matched early
+  - subcategory: "Rent"
+    keywords:
+      - "102701"
+      - "rent"
+      - "real estate"
+    priority: 90
+
+  - subcategory: "Personal Loan"
+    keywords:
+      - "loan repay"
+      - "personal loan"
+    priority: 90
+
+  # Utilities (Medium-High Priority)
+  # Essential services that need specific matching
+  - subcategory: "Electricity"
+    keywords:
+      - "alinta"
+      - "qp emf"
+      - "electricity"
+      - "energy australia"
+      - "origin energy"
+    priority: 80
+
+  - subcategory: "Phone Bill"
+    keywords:
+      - "telstra"
+      - "optus"
+      - "vodafone"
+      - "mobile"
+      - "phone bill"
+    priority: 80
+
+  - subcategory: "Internet"
+    keywords:
+      - "hubbl"
+      - "binge"
+      - "internet"
+      - "nbn"
+      - "broadband"
+      - "netflix"
+      - "streaming"
+      - "dodo"
+    priority: 80
+
+  # Insurance (Medium-High Priority)
+  # Various insurance types grouped together
+  - subcategory: "Insurance"
+    keywords:
+      - "ahm"
+      - "health insurance"
+      - "medibank"
+      - "bupa"
+      - "pet insurance"
+      - "greenvet"
+      - "rspca"
+      - "budget direct"
+      - "car insurance"
+      - "auto insurance"
+      - "vehicle insurance"
+      - "healthy pets plus"
+    priority: 80
+
+  # Pet Expenses (Medium-High Priority)
+  # Bruno's food needs higher priority than generic groceries
+  - subcategory: "Bruno Food"
+    keywords:
+      - "animal kingdom"
+      - "pet food"
+      - "petbarn"
+      - "pet stock"
+      - "pet supplies"
+    priority: 75
+
+  # Food & Groceries (Medium Priority)
+  - subcategory: "Groceries"
+    keywords:
+      - "woolworths"
+      - "nightowl"
+      - "coles"
+      - "butcher"
+      - "flannerys"
+      - "markets"
+      - "fresh fruit mar"
+      - "hanaro trading"
+      - "family farm meat"
+      - "choice discounts"
+      - "aldi"
+      - "iga"
+      - "hanaro"
+      - "eurofood"
+      - "vish fruit & veg"
+    priority: 70
+
+  - subcategory: "Alcohol"
+    keywords:
+      - "liquorland"
+      - "dan murphy"
+      - "bottleshop"
+    priority: 40
+  
+  # Fines (Medium Priority)
+  - subcategory: "Fine"
+    keywords:
+      - "sper"
+    priority: 70
+
+  - subcategory: "Overdrawn Fee"
+    keywords:
+      - "overdraw fee"
+    priority: 70
+
+  # Transportation (Medium Priority)
+  - subcategory: "Fuel"
+    keywords:
+      - "fuel"
+      - "hope"
+      - "pearl"
+      - "hanaro"
+      - "hope"
+      - "ampol"
+      - "7-eleven"
+      - "bp "
+      - "shell"
+      - "caltex"
+      - "united"
+    priority: 70
+
+  - subcategory: "Travel"
+    keywords:
+      - "station"
+      - "translink"
+      - "easypark"
+      - "uber"
+      - "taxi"
+      - "parking"
+    priority: 70
+
+  - subcategory: "Productivity"
+    keywords:
+      - "office"
+      - "claude"
+    priority: 90
+
+  # Shopping (Medium-Low Priority)
+  # Fashion retailers - use lower priority as some keywords are common
+  - subcategory: "Fashion"
+    keywords:
+      - "kmart"
+      - "david jones"
+      - "myer"
+      - "ugg"
+      - "cotton on"
+      - "hennes mauritz"
+      - "h&m"
+      - "big w"
+      - "rebel"
+      - "target"
+      - "uniqlo"
+      - "zara"
+      - "nike"
+      - "adidas"
+      - "charcoal"
+      - "harli harpa"
+    priority: 60
+
+  - subcategory: "Thrift"
+    keywords:
+      - "salvos"
+      - "lifeline"
+    priority: 60
+
+  # Personal Care (Medium-Low Priority)
+  - subcategory: "Beauty"
+    keywords:
+      - "beauty"
+      - "lush"
+      - "mecca"
+      - "brows"
+      - "hair"
+      - "salon"
+      - "spa"
+      - "nail"
+      - "glamaco"
+      - "makeup"
+      - "cosmetic"
+      - "skincare"
+      - "barber"
+      - "haircut"
+      - "reena mehta"
+      - "sephora"
+      - "fabiana nishimura"
+    priority: 60
+
+  - subcategory: "Gym"
+    keywords:
+      - "gym"
+      - "fitness"
+      - "anytime fitness"
+      - "f45"
+      - "crossfit"
+      - "yoga"
+      - "pilates"
+      - "jetts"
+      - "goodlife"
+      - "snap fitness"
+      - "wellness"
+      - "fitstop"
+      - "reformed"
+      - "emf"
+    priority: 60
+
+  - subcategory: "Health"
+    keywords:
+      - "chemist"
+      - "pharmacy"
+      - "doctor"
+      - "telehealth"
+      - "medical"
+      - "pathology"
+      - "dental"
+      - "chemmart"
+      - "nutrition"
+      - "health"
+    priority: 40
+
+  # Dining (Low Priority)
+  # Generic terms like "cafe", "restaurant" should be checked late
+  - subcategory: "Eating Out"
+    keywords:
+      - "rolld"
+      - "bakehouse"
+      - "burger"
+      - "baker"
+      - "roast"
+      - "gotcha"
+      - "sushi"
+      - "pho"
+      - "gelatissimo"
+      - "coffee"
+      - "zarrafas"
+      - "guzman y gomez"
+      - "gyg"
+      - "korean bbq"
+      - "espresso"
+      - "kooco"
+      - "sunnyboy"
+      - "yo-chi"
+      - "asian delight"
+      - "salty plum"
+      - "arithai"
+      - "arman"
+      - "malaysia makanan"
+      - "meizihan"
+      - "sandoichigo"
+      - "dan murphy"
+      - "ls korean"
+      - "mcdonald"
+      - "kfc"
+      - "hungry jack"
+      - "subway"
+      - "domino"
+      - "gelati"
+      - "pizza"
+      - "cafe"
+      - "restaurant"
+      - "bar"
+      - "costa taco"
+      - "sun devil"
+      - "chargrill"
+      - "rsl"
+      - "smokehouse"
+      - "kebab"
+      - "brisket"
+      - "noodle"
+    priority: 50
+
+  # Miscellaneous (Lowest Priority)
+  # Explicit categorization for things that don't fit elsewhere
+  - subcategory: "Miscellaneous"
+    keywords:
+      - "overdraw fee"
+      - "apple.com"
+      - "bunnings"
+      - "reject shop"
+      - "dollar stretcher"
+      - "sper qld"
+      - "thong van nguyen"
+      - "cappa"
+      - "vending"
+    priority: 10
