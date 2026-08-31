@@ -1,58 +1,52 @@
-rules:
-  # Income Categories (High Priority)
-  # These need to be checked first to avoid false matches with generic terms
-  - subcategory: "Mike Contribute"
+categories:
+  - title: "Mike In"
     keywords:
       - "michel"
       - "mike"
       - "to joint"
     priority: 100
 
-  - subcategory: "Anastasia Contribute"
+  - title: "Anastasia In"
     keywords:
       - "from xx1300"
       - "from xx9058"
     priority: 100
 
-  - subcategory: "Anastasia Transfer"
+  - title: "Anastasia Transfer"
     keywords:
       - "to xx1300"
       - "to xx9058"
     priority: 100
 
-  - subcategory: "Scott Transfer"
+  - title: "Scott Transfer"
     keywords:
       - "scott whan"
     priority: 100
 
-  - subcategory: "Money Transfer"
+  - title: "Money Transfer"
     keywords:
       - "transfer"
     priority: 60
 
-  - subcategory: "Return"
+  - title: "Return"
     keywords:
       - "return"
     priority: 90
 
-  # Specific Expenses (High Priority)
-  # Fixed recurring expenses that should be matched early
-  - subcategory: "Rent"
+  - title: "Rent"
     keywords:
       - "102701"
       - "rent"
       - "real estate"
     priority: 90
 
-  - subcategory: "Personal Loan"
+  - title: "Personal Loan"
     keywords:
       - "loan repay"
       - "personal loan"
     priority: 90
 
-  # Utilities (Medium-High Priority)
-  # Essential services that need specific matching
-  - subcategory: "Electricity"
+  - title: "Electricity"
     keywords:
       - "alinta"
       - "qp emf"
@@ -61,7 +55,7 @@ rules:
       - "origin energy"
     priority: 80
 
-  - subcategory: "Phone Bill"
+  - title: "Phone Bill"
     keywords:
       - "telstra"
       - "optus"
@@ -70,7 +64,7 @@ rules:
       - "phone bill"
     priority: 80
 
-  - subcategory: "Internet"
+  - title: "Internet"
     keywords:
       - "hubbl"
       - "binge"
@@ -82,9 +76,7 @@ rules:
       - "dodo"
     priority: 80
 
-  # Insurance (Medium-High Priority)
-  # Various insurance types grouped together
-  - subcategory: "Insurance"
+  - title: "Insurance"
     keywords:
       - "ahm"
       - "health insurance"
@@ -100,9 +92,7 @@ rules:
       - "healthy pets plus"
     priority: 80
 
-  # Pet Expenses (Medium-High Priority)
-  # Bruno's food needs higher priority than generic groceries
-  - subcategory: "Bruno Food"
+  - title: "Bruno Food"
     keywords:
       - "animal kingdom"
       - "pet food"
@@ -111,8 +101,7 @@ rules:
       - "pet supplies"
     priority: 75
 
-  # Food & Groceries (Medium Priority)
-  - subcategory: "Groceries"
+  - title: "Groceries"
     keywords:
       - "woolworths"
       - "nightowl"
@@ -131,26 +120,24 @@ rules:
       - "vish fruit & veg"
     priority: 70
 
-  - subcategory: "Alcohol"
+  - title: "Alcohol"
     keywords:
       - "liquorland"
       - "dan murphy"
       - "bottleshop"
     priority: 40
-  
-  # Fines (Medium Priority)
-  - subcategory: "Fine"
+
+  - title: "Fine"
     keywords:
       - "sper"
     priority: 70
 
-  - subcategory: "Overdrawn Fee"
+  - title: "Overdrawn Fee"
     keywords:
       - "overdraw fee"
     priority: 70
 
-  # Transportation (Medium Priority)
-  - subcategory: "Fuel"
+  - title: "Fuel"
     keywords:
       - "fuel"
       - "hope"
@@ -165,7 +152,7 @@ rules:
       - "united"
     priority: 70
 
-  - subcategory: "Travel"
+  - title: "Travel"
     keywords:
       - "station"
       - "translink"
@@ -175,15 +162,13 @@ rules:
       - "parking"
     priority: 70
 
-  - subcategory: "Productivity"
+  - title: "Productivity"
     keywords:
       - "office"
       - "claude"
     priority: 90
 
-  # Shopping (Medium-Low Priority)
-  # Fashion retailers - use lower priority as some keywords are common
-  - subcategory: "Fashion"
+  - title: "Fashion"
     keywords:
       - "kmart"
       - "david jones"
@@ -203,14 +188,13 @@ rules:
       - "harli harpa"
     priority: 60
 
-  - subcategory: "Thrift"
+  - title: "Thrift"
     keywords:
       - "salvos"
       - "lifeline"
     priority: 60
 
-  # Personal Care (Medium-Low Priority)
-  - subcategory: "Beauty"
+  - title: "Beauty"
     keywords:
       - "beauty"
       - "lush"
@@ -231,7 +215,7 @@ rules:
       - "fabiana nishimura"
     priority: 60
 
-  - subcategory: "Gym"
+  - title: "Gym"
     keywords:
       - "gym"
       - "fitness"
@@ -249,7 +233,7 @@ rules:
       - "emf"
     priority: 60
 
-  - subcategory: "Health"
+  - title: "Health"
     keywords:
       - "chemist"
       - "pharmacy"
@@ -263,9 +247,7 @@ rules:
       - "health"
     priority: 40
 
-  # Dining (Low Priority)
-  # Generic terms like "cafe", "restaurant" should be checked late
-  - subcategory: "Eating Out"
+  - title: "Eating Out"
     keywords:
       - "rolld"
       - "bakehouse"
@@ -314,9 +296,7 @@ rules:
       - "noodle"
     priority: 50
 
-  # Miscellaneous (Lowest Priority)
-  # Explicit categorization for things that don't fit elsewhere
-  - subcategory: "Miscellaneous"
+  - title: "Miscellaneous"
     keywords:
       - "overdraw fee"
       - "apple.com"

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{
     MyResult,
     models::{Transaction, TransactionDbRow},
@@ -9,7 +11,8 @@ pub struct Database {
 }
 
 impl Database {
-    pub fn new(path: &str) -> MyResult<Database> {
+    pub fn new(path: PathBuf) -> MyResult<Database> {
+        Database::prepare_path(&path)?;
         let conn = Connection::open(path)?;
 
         conn.execute_batch(
@@ -25,6 +28,19 @@ impl Database {
         )?;
 
         Ok(Database { conn })
+    }
+
+    fn prepare_path(path: &PathBuf) -> MyResult<()> {
+        let parent = path
+            .parent()
+            .expect("Database cannot be located at root level");
+
+        if !parent.is_dir() {
+            std::fs::create_dir_all(parent)
+                .map_err(|err| format!("{}: {}", parent.display(), err))?
+        }
+
+        Ok(())
     }
 
     pub fn insert_transactions(&mut self, transactions: &[Transaction]) -> MyResult<usize> {

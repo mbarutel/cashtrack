@@ -2,7 +2,7 @@ use std::{path::Path, str::FromStr, time::Instant};
 
 use crate::{
     MyResult, State,
-    config::CategoryRule,
+    config::Category,
     models::{Direction, Transaction},
 };
 
@@ -14,7 +14,7 @@ use crate::{
 pub fn import(state: &mut State, path: &Path) -> MyResult<()> {
     let start = Instant::now();
 
-    let mut transactions = read_transactions(path, state.config.rules())?;
+    let mut transactions = read_transactions(path, state.config.categories())?;
     sort_by_date(&mut transactions);
 
     let inserted_count = state.db.insert_transactions(&transactions)?;
@@ -28,7 +28,7 @@ pub fn import(state: &mut State, path: &Path) -> MyResult<()> {
     Ok(())
 }
 
-fn read_transactions(path: &Path, rules: &Vec<CategoryRule>) -> MyResult<Vec<Transaction>> {
+fn read_transactions(path: &Path, rules: &Vec<Category>) -> MyResult<Vec<Transaction>> {
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(false)
         .from_path(path)
@@ -54,19 +54,19 @@ fn read_transactions(path: &Path, rules: &Vec<CategoryRule>) -> MyResult<Vec<Tra
     Ok(transactions)
 }
 
-fn categorizer(rules: &Vec<CategoryRule>, description: &String) -> String {
+fn categorizer(categories: &Vec<Category>, description: &String) -> String {
     let mut result = "Unknown".to_string();
     let mut last_prio_level = 0;
 
-    for rule in rules {
-        for keyword in rule.keywords() {
+    for category in categories {
+        for keyword in category.keywords() {
             if description
                 .to_lowercase()
                 .contains(keyword.to_lowercase().as_str())
-                && rule.priority() > last_prio_level
+                && category.priority() > last_prio_level
             {
-                result = rule.subcategory().to_string();
-                last_prio_level = rule.priority();
+                result = category.title().to_string();
+                last_prio_level = category.priority();
             }
         }
     }
@@ -74,9 +74,9 @@ fn categorizer(rules: &Vec<CategoryRule>, description: &String) -> String {
     result
 }
 
-fn sort_by_category(transactions: &mut Vec<Transaction>) {
-    transactions.sort_by(|a, b| a.category.cmp(&b.category));
-}
+// fn sort_by_category(transactions: &mut Vec<Transaction>) {
+//     transactions.sort_by(|a, b| a.category.cmp(&b.category));
+// }
 
 fn sort_by_date(transactions: &mut Vec<Transaction>) {
     transactions.sort_by(|a, b| a.date.cmp(&b.date));
