@@ -30,15 +30,15 @@ impl Config {
 }
 
 impl CategoryRule {
-    fn subcategory(&self) -> &str {
+    pub fn subcategory(&self) -> &str {
         &self.subcategory
     }
 
-    fn keywords(&self) -> &Vec<String> {
+    pub fn keywords(&self) -> &Vec<String> {
         &self.keywords
     }
 
-    fn priority(&self) -> u32 {
+    pub fn priority(&self) -> u32 {
         self.priority
     }
 }

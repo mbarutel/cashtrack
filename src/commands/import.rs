@@ -1,91 +1,86 @@
-use std::path::Path;
+use std::{path::Path, str::FromStr, time::Instant};
 
-use crate::{MyResult, State};
+use crate::{
+    MyResult, State,
+    config::CategoryRule,
+    models::{Direction, Transaction},
+};
 
-pub fn import(_state: &State, _path: &Path) -> MyResult<()> {
-    // let config = read_categories(Path::new("./categories.yaml"))?;
-    // let transactions = read_transactions(path, &config.rules)?;
+// TODO: This can be done in batches eventually.
+// Take the (String, String, String)
+// Generate the Transaction Object
+// Insert into Database
 
-    // let mut db = Database::new(Path::new("cashtrack.db"))?;
-    // db.insert_transactions(&transactions)?;
+pub fn import(state: &mut State, path: &Path) -> MyResult<()> {
+    let start = Instant::now();
 
-    // print_transactions(transactions);
-    println!("Import command call");
+    let mut transactions = read_transactions(path, state.config.rules())?;
+    sort_by_date(&mut transactions);
 
+    let inserted_count = state.db.insert_transactions(&transactions)?;
+
+    let elapsed = start.elapsed();
+    println!(
+        "Imported {} Complete: {}ms",
+        inserted_count,
+        elapsed.as_millis()
+    );
     Ok(())
 }
 
-// fn print_transactions(transactions: Vec<Transaction>) {
-//     let amount_width = transactions
-//         .iter()
-//         .map(|t| format!("{:.2}", t.amount).len())
-//         .max()
-//         .unwrap_or(0);
-//     let category_width = transactions
-//         .iter()
-//         .map(|t| t.category.len())
-//         .max()
-//         .unwrap_or(0);
+fn read_transactions(path: &Path, rules: &Vec<CategoryRule>) -> MyResult<Vec<Transaction>> {
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(path)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
 
-//     for transaction in transactions {
-//         println!(
-//             "{} | {:>amount_width$.2} | {:>category_width$} | {}",
-//             transaction.date, transaction.amount, transaction.category, transaction.description
-//         );
-//     }
-// }
+    let mut transactions: Vec<Transaction> = Vec::new();
 
-// fn read_transactions(path: &Path, rules: &Vec<CategoryRule>) -> MyResult<Vec<Transaction>> {
-//     let mut reader = csv::ReaderBuilder::new()
-//         .has_headers(false)
-//         .from_path(path)
-//         .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
-//     let mut transactions: Vec<Transaction> = Vec::new();
+    for result in reader.deserialize() {
+        let (date, amount, description): (String, String, String) = result?;
+        let date = chrono::NaiveDate::parse_from_str(&date, "%d/%m/%Y")?;
+        let amount = rust_decimal::Decimal::from_str(&amount)?;
 
-//     for result in reader.deserialize() {
-//         let (date, amount, description): (String, String, String) = result?;
-//         let date = chrono::NaiveDate::parse_from_str(&date, "%d/%m/%Y")?;
-//         let category = categorizer(rules, &description);
-//         let amount = rust_decimal::Decimal::from_str(&amount)?;
+        transactions.push(Transaction {
+            date,
+            direction: Direction::from(amount),
+            amount,
+            category: categorizer(rules, &description),
+            description,
+            bank: "Commonwealth".to_string(),
+        });
+    }
 
-//         transactions.push(Transaction {
-//             id: 0,
-//             date,
-//             amount,
-//             category,
-//             description,
-//             bank: "COMMONWEALTH".to_string(),
-//         });
-//     }
+    Ok(transactions)
+}
 
-//     sort_by_category(&mut transactions);
+fn categorizer(rules: &Vec<CategoryRule>, description: &String) -> String {
+    let mut result = "Unknown".to_string();
+    let mut last_prio_level = 0;
 
-//     Ok(transactions)
-// }
+    for rule in rules {
+        for keyword in rule.keywords() {
+            if description
+                .to_lowercase()
+                .contains(keyword.to_lowercase().as_str())
+                && rule.priority() > last_prio_level
+            {
+                result = rule.subcategory().to_string();
+                last_prio_level = rule.priority();
+            }
+        }
+    }
 
-// fn sort_by_category(transactions: &mut Vec<Transaction>) {
-//     transactions.sort_by(|a, b| a.category.cmp(&b.category));
-// }
+    result
+}
 
-// fn categorizer(rules: &Vec<CategoryRule>, description: &String) -> String {
-//     let mut result = "Unknown".to_string();
-//     let mut last_prio_level = 0;
+fn sort_by_category(transactions: &mut Vec<Transaction>) {
+    transactions.sort_by(|a, b| a.category.cmp(&b.category));
+}
 
-//     for rule in rules {
-//         for keyword in &rule.keywords {
-//             if description
-//                 .to_lowercase()
-//                 .contains(keyword.to_lowercase().as_str())
-//                 && rule.priority > last_prio_level
-//             {
-//                 result = rule.subcategory.clone();
-//                 last_prio_level = rule.priority;
-//             }
-//         }
-//     }
-
-//     result
-// }
+fn sort_by_date(transactions: &mut Vec<Transaction>) {
+    transactions.sort_by(|a, b| a.date.cmp(&b.date));
+}
 
 // #[cfg(test)]
 // mod tests {

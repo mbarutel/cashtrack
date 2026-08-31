@@ -1,20 +1,13 @@
-use std::{
-    fmt::{Display, write},
-    str::FromStr,
-};
+use std::{fmt::Display, str::FromStr};
 
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 
-// These properties should be private
-// because once they are set, they should never
-// be updated afterwards.
-
-pub struct TransactionCsvRow {
-    pub date: String,
-    pub amount: String,
-    pub description: String,
-}
+// pub struct TransactionCsvRow {
+//     pub date: String,
+//     pub amount: String,
+//     pub description: String,
+// }
 
 pub struct TransactionDbRow {
     pub id: i64,

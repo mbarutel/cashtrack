@@ -1,39 +1,28 @@
-use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
+use chrono::{Datelike, Days, Local, Months, NaiveDate, Weekday};
+use rust_decimal::Decimal;
 
 use crate::{MyResult, State, cli::TimePeriod, models::Transaction};
 
-// TODO: We need helper function that get the start date of week, month and year
-// along with test suites.
-
 pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> {
     match time_period {
-        Some(time_period) => match time_period {
-            TimePeriod::Weekly => {
-                println!("Weekly");
+        Some(time_period) => {
+            match time_period {
+                TimePeriod::Weekly => println!("Weekly\n"),
+                TimePeriod::Fortnightly => println!("Fortnightly\n"),
+                TimePeriod::Monthly => println!("Monthly\n"),
+                TimePeriod::Yearly => println!("Yearly\n"),
+            };
 
-                let transactions = state.db.list_all_transactions()?;
+            let (start_date, end_date) = get_dates(Local::now().date_naive(), time_period);
 
+            let transactions = state.db.list_transactions(&start_date, &end_date)?;
+
+            if transactions.is_empty() {
+                println!("No transactions to print!");
+            } else {
                 print_transactions(transactions);
             }
-            TimePeriod::Fortnightly => {
-                println!("Fortnightly");
-                let transactions = state.db.list_all_transactions()?;
-
-                print_transactions(transactions);
-            }
-            TimePeriod::Monthly => {
-                println!("Monthly");
-                let transactions = state.db.list_all_transactions()?;
-
-                print_transactions(transactions);
-            }
-            TimePeriod::Yearly => {
-                println!("Yearly");
-                let transactions = state.db.list_all_transactions()?;
-
-                print_transactions(transactions);
-            }
-        },
+        }
         None => {
             println!("List All");
             let transactions = state.db.list_all_transactions()?;
@@ -57,7 +46,16 @@ fn print_transactions(transactions: Vec<Transaction>) {
         .max()
         .unwrap_or(0);
 
+    let mut total_in = Decimal::from(0);
+    let mut total_out = Decimal::from(0);
+
     for transaction in transactions {
+        match transaction.direction {
+            crate::models::Direction::Inflow => total_in += transaction.amount,
+            crate::models::Direction::Outflow => total_out += transaction.amount,
+            _ => {}
+        }
+
         println!(
             "{} | {:>10} | {:>amount_width$.2} | {:>category_width$} | {}",
             transaction.date,
@@ -67,6 +65,13 @@ fn print_transactions(transactions: Vec<Transaction>) {
             transaction.description
         );
     }
+
+    println!(
+        "\nTotal In:  {}\nTotal Out: {} \nRemaining: {}",
+        total_in,
+        total_out,
+        total_in - total_out
+    );
 }
 
 fn get_dates(today: NaiveDate, time_period: TimePeriod) -> (String, String) {
@@ -89,7 +94,7 @@ fn get_dates(today: NaiveDate, time_period: TimePeriod) -> (String, String) {
         ),
     };
 
-    let format_date = |date: NaiveDate| date.format("%Y/%m/%d").to_string();
+    let format_date = |date: NaiveDate| date.format("%Y-%m-%d").to_string();
 
     (format_date(start), format_date(end))
 }

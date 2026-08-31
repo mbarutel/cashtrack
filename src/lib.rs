@@ -18,7 +18,10 @@ pub struct State {
 }
 
 impl State {
-    fn new(config_path: &str, db_path: &str) -> MyResult<Self> {
+    fn new() -> MyResult<Self> {
+        let config_path = "./categories.yaml";
+        let db_path = "./cashtrack.db";
+
         Ok(Self {
             config: Config::new(config_path)?,
             db: Database::new(db_path)?,
@@ -28,12 +31,12 @@ impl State {
 
 pub fn run() -> MyResult<()> {
     let cli = Cli::try_parse()?;
-    let mut state = State::new("./categories.yaml", "./cashtrack.db")?;
+    let mut state = State::new()?;
 
     match cli.command {
         Command::Report { time_period } => commands::report(&state, time_period)?,
         Command::List { time_period } => commands::list(&mut state, time_period)?,
-        Command::Import { csv_path } => commands::import(&state, &csv_path)?,
+        Command::Import { csv_path } => commands::import(&mut state, &csv_path)?,
     }
 
     Ok(())

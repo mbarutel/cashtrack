@@ -2,7 +2,6 @@ use crate::{
     MyResult,
     models::{Transaction, TransactionDbRow},
 };
-use chrono::NaiveDate;
 use rusqlite::{Connection, Row, params};
 
 pub struct Database {
@@ -55,16 +54,22 @@ impl Database {
         Ok(inserted)
     }
 
-    pub fn list_transactions(
-        conn: &mut Connection,
-        from: NaiveDate,
-        to: NaiveDate,
-    ) -> MyResult<Vec<Transaction>> {
-        let mut stmt = conn.prepare(
-            "SELECT id, date, amount, category, description, bank
-        FROM transactions
-        WHERE date >= ?1 AND date <= ?2
-        ORDER BY date, id",
+    pub fn list_transactions(&mut self, from: &str, to: &str) -> MyResult<Vec<Transaction>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT
+                id,
+                date,
+                amount,
+                category,
+                description,
+                bank
+            FROM
+                transactions
+            WHERE
+                date >= ?1 AND date <= ?2
+            ORDER BY
+                date
+            DESC",
         )?;
 
         let rows = stmt.query_map(params![from, to], |row| TransactionDbRow::try_from(row))?;
@@ -90,8 +95,8 @@ impl Database {
             FROM
                 transactions
             ORDER BY
-                 date,
-                 id",
+                 date
+            DESC",
         )?;
 
         let rows = stmt.query_map([], |row| TransactionDbRow::try_from(row))?;
