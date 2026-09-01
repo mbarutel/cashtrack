@@ -67,10 +67,10 @@ fn print_transactions(transactions: Vec<Transaction>) {
     }
 
     println!(
-        "\nTotal In:  {}\nTotal Out: {} \nRemaining: {}",
-        total_in,
-        total_out,
-        total_in - total_out
+        "\nTotal In:  ${}\nTotal Out: ${} \nRemaining: ${}",
+        format_decimal(total_in),
+        format_decimal(total_out),
+        format_decimal(total_in - total_out)
     );
 }
 
@@ -97,6 +97,22 @@ fn get_dates(today: NaiveDate, time_period: TimePeriod) -> (String, String) {
     let format_date = |date: NaiveDate| date.format("%Y-%m-%d").to_string();
 
     (format_date(start), format_date(end))
+}
+
+fn format_decimal(amount: Decimal) -> String {
+    let s = amount.round_dp(2).to_string();
+    let (num, frac) = s.split_once('.').unwrap_or((s.as_str(), "00"));
+    let (sign, int) = num.strip_prefix('-').map_or(("", num), |i| ("-", i));
+
+    let mut out = String::new();
+    for (i, c) in int.chars().enumerate() {
+        if i > 0 && (int.len() - i) % 3 == 0 {
+            out.push(',');
+        }
+        out.push(c);
+    }
+
+    format!("{sign}{out}.{frac:0<2}")
 }
 
 #[cfg(test)]
