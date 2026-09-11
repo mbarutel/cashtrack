@@ -1,0 +1,5 @@
+- [ ] We should scrap Direction. It's stupid
+- [ ] Create a specific rendering module
+- [ ] Move Transaction DB struct in the db.rs
+- [ ] Lazy load the state depending on what command is being run
+- [ ] use anyhow

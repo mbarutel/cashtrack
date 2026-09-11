@@ -50,7 +50,7 @@ pub fn run() -> MyResult<()> {
     let mut state = State::new()?;
 
     match cli.command {
-        Command::Report { time_period } => commands::report(&state, time_period)?,
+        Command::Report { time_period } => commands::report(&mut state, time_period)?,
         Command::List { time_period } => commands::list(&mut state, time_period)?,
         Command::Import { csv_path } => commands::import(&mut state, &csv_path)?,
     }

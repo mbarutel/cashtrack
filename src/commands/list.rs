@@ -1,7 +1,7 @@
 use chrono::{Datelike, Days, Local, Months, NaiveDate, Weekday};
 use rust_decimal::Decimal;
 
-use crate::{MyResult, State, cli::TimePeriod, models::Transaction};
+use crate::{cli::TimePeriod, models::Transaction, MyResult, State};
 
 pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> {
     match time_period {
@@ -13,7 +13,9 @@ pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> 
                 TimePeriod::Yearly => println!("Yearly\n"),
             };
 
-            let (start_date, end_date) = get_dates(Local::now().date_naive(), time_period);
+            // let (start_date, end_date) = get_dates(Local::now().date_naive(), time_period);
+            let start_date = "2026-08-01";
+            let end_date = "2026-09-01";
 
             let transactions = state.db.list_transactions(&start_date, &end_date)?;
 
@@ -99,7 +101,7 @@ fn get_dates(today: NaiveDate, time_period: TimePeriod) -> (String, String) {
     (format_date(start), format_date(end))
 }
 
-fn format_decimal(amount: Decimal) -> String {
+pub fn format_decimal(amount: Decimal) -> String {
     let s = amount.round_dp(2).to_string();
     let (num, frac) = s.split_once('.').unwrap_or((s.as_str(), "00"));
     let (sign, int) = num.strip_prefix('-').map_or(("", num), |i| ("-", i));

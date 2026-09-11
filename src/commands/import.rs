@@ -1,9 +1,9 @@
 use std::{path::Path, str::FromStr, time::Instant};
 
 use crate::{
-    MyResult, State,
     config::Category,
     models::{Direction, Transaction},
+    MyResult, State,
 };
 
 // TODO: This can be done in batches eventually.

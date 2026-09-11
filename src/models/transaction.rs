@@ -3,12 +3,6 @@ use std::{fmt::Display, str::FromStr};
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 
-// pub struct TransactionCsvRow {
-//     pub date: String,
-//     pub amount: String,
-//     pub description: String,
-// }
-
 pub struct TransactionDbRow {
     pub id: i64,
     pub date: String,
@@ -18,7 +12,7 @@ pub struct TransactionDbRow {
     pub bank: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Direction {
     Inflow,
     Outflow,
