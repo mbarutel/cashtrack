@@ -1,8 +1,8 @@
-use std::{path::Path, str::FromStr, time::Instant};
+use std::{path::Path, time::Instant};
 
 use crate::{
     config::Category,
-    models::{Direction, Transaction},
+    models::{Bank, Direction, Transaction},
     MyResult, State,
 };
 
@@ -11,10 +11,10 @@ use crate::{
 // Generate the Transaction Object
 // Insert into Database
 
-pub fn import(state: &mut State, path: &Path) -> MyResult<()> {
+pub fn import(state: &mut State, path: &Path, bank: Bank) -> MyResult<()> {
     let start = Instant::now();
 
-    let mut transactions = read_transactions(path, state.config.categories())?;
+    let mut transactions = read_transactions(state.config.categories(), path, bank)?;
     sort_by_date(&mut transactions);
 
     let inserted_count = state.db.insert_transactions(&transactions)?;
@@ -28,30 +28,25 @@ pub fn import(state: &mut State, path: &Path) -> MyResult<()> {
     Ok(())
 }
 
-fn read_transactions(path: &Path, rules: &Vec<Category>) -> MyResult<Vec<Transaction>> {
-    let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .from_path(path)
-        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
+fn read_transactions(rules: &Vec<Category>, path: &Path, bank: Bank) -> MyResult<Vec<Transaction>> {
+    Ok(bank
+        .parse(path)?
+        .into_iter()
+        .map(|row| {
+            let transaction = Transaction {
+                date: row.date,
+                direction: Direction::from(row.amount),
+                amount: row.amount.abs(),
+                category: categorizer(rules, &row.description),
+                description: row.description,
+                bank: bank.to_string(),
+            };
 
-    let mut transactions: Vec<Transaction> = Vec::new();
+            println!("{:#?}", transaction);
 
-    for result in reader.deserialize() {
-        let (date, amount, description): (String, String, String) = result?;
-        let date = chrono::NaiveDate::parse_from_str(&date, "%d/%m/%Y")?;
-        let amount = rust_decimal::Decimal::from_str(&amount)?;
-
-        transactions.push(Transaction {
-            date,
-            direction: Direction::from(amount),
-            amount,
-            category: categorizer(rules, &description),
-            description,
-            bank: "Commonwealth".to_string(),
-        });
-    }
-
-    Ok(transactions)
+            transaction
+        })
+        .collect())
 }
 
 fn categorizer(categories: &Vec<Category>, description: &String) -> String {
@@ -73,10 +68,6 @@ fn categorizer(categories: &Vec<Category>, description: &String) -> String {
 
     result
 }
-
-// fn sort_by_category(transactions: &mut Vec<Transaction>) {
-//     transactions.sort_by(|a, b| a.category.cmp(&b.category));
-// }
 
 fn sort_by_date(transactions: &mut Vec<Transaction>) {
     transactions.sort_by(|a, b| a.date.cmp(&b.date));

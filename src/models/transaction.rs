@@ -1,7 +1,6 @@
-use std::{fmt::Display, str::FromStr};
-
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
+use std::{fmt::Display, str::FromStr};
 
 pub struct TransactionDbRow {
     pub id: i64,
@@ -19,6 +18,7 @@ pub enum Direction {
     Noflow,
 }
 
+#[derive(Debug)]
 pub struct Transaction {
     pub date: NaiveDate,
     pub direction: Direction,
@@ -48,7 +48,7 @@ impl TryFrom<TransactionDbRow> for Transaction {
         Ok(Self {
             date,
             direction: Direction::from(amount),
-            amount: amount.abs(),
+            amount: amount,
             category: value.category,
             description: value.description,
             bank: value.bank,

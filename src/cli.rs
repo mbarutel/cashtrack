@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
+use crate::models::Bank;
+
 #[derive(Parser)]
 pub struct Cli {
     #[command(subcommand)]
@@ -21,6 +23,8 @@ pub enum Command {
     Import {
         #[arg(short, long)]
         csv_path: PathBuf,
+        #[arg(short, long, value_enum)]
+        bank: Bank,
     },
 }
 

@@ -52,7 +52,7 @@ pub fn run() -> MyResult<()> {
     match cli.command {
         Command::Report { time_period } => commands::report(&mut state, time_period)?,
         Command::List { time_period } => commands::list(&mut state, time_period)?,
-        Command::Import { csv_path } => commands::import(&mut state, &csv_path)?,
+        Command::Import { csv_path, bank } => commands::import(&mut state, &csv_path, bank)?,
     }
 
     Ok(())

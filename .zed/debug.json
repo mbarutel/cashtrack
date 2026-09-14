@@ -23,6 +23,6 @@
     "program": "$ZED_WORKTREE_ROOT/target/debug/cashtrack",
     "cwd": "$ZED_WORKTREE_ROOT",
     "sourceLanguages": ["rust"],
-    "args": ["import", "--csv-path", "test_file.csv"]
+    "args": ["import", "--csv-path", "commonwealth_export.csv", "--bank", "commonwealth"]
   },
 ]

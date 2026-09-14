@@ -59,8 +59,9 @@ fn print_transactions(transactions: Vec<Transaction>) {
         }
 
         println!(
-            "{} | {:>10} | {:>amount_width$.2} | {:>category_width$} | {}",
+            "{} | {:>15} | {:>10} | {:>amount_width$.2} | {:>category_width$} | {}",
             transaction.date,
+            transaction.bank,
             transaction.direction,
             transaction.amount,
             transaction.category,
