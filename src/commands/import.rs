@@ -2,7 +2,7 @@ use std::{path::Path, time::Instant};
 
 use crate::{
     config::Category,
-    models::{Bank, Direction, Transaction},
+    models::{Bank, Transaction},
     MyResult, State,
 };
 
@@ -35,8 +35,7 @@ fn read_transactions(rules: &Vec<Category>, path: &Path, bank: Bank) -> MyResult
         .map(|row| {
             let transaction = Transaction {
                 date: row.date,
-                direction: Direction::from(row.amount),
-                amount: row.amount.abs(),
+                amount: row.amount,
                 category: categorizer(rules, &row.description),
                 description: row.description,
                 bank: bank.to_string(),

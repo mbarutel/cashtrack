@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 
-use super::{Direction, Transaction};
+use super::Transaction;
 
 #[derive(Debug, Default)]
 pub struct Report {
@@ -11,13 +11,7 @@ pub struct Report {
     pub end_date: NaiveDate,
     pub total_inflow: Decimal,
     pub total_outflow: Decimal,
-    pub categories_total_flow: HashMap<String, Amount>,
-}
-
-#[derive(Debug)]
-pub struct Amount {
-    pub direction: Direction,
-    pub value: Decimal,
+    pub categories_total_flow: HashMap<String, Decimal>,
 }
 
 impl Report {
@@ -39,21 +33,18 @@ impl Report {
                 report.end_date = tran.date
             }
 
-            match tran.direction {
-                Direction::Inflow => report.total_inflow += tran.amount,
-                Direction::Outflow => report.total_outflow += tran.amount,
-                _ => {}
+            if tran.amount > Decimal::ZERO {
+                report.total_inflow += tran.amount
+            } else if tran.amount < Decimal::ZERO {
+                report.total_outflow += tran.amount
             }
 
-            let entry = report
+            let mut entry = report
                 .categories_total_flow
                 .entry(tran.category)
-                .or_insert(Amount {
-                    direction: tran.direction,
-                    value: Decimal::from(0),
-                });
+                .or_insert(Decimal::ZERO);
 
-            entry.value += tran.amount;
+            entry += tran.amount;
         }
 
         report

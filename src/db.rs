@@ -1,10 +1,11 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use crate::{
-    MyResult,
     models::{Transaction, TransactionDbRow},
+    MyResult,
 };
-use rusqlite::{Connection, Row, params};
+use chrono::NaiveDate;
+use rusqlite::{params, Connection, Row};
 
 pub struct Database {
     conn: Connection,
@@ -125,6 +126,14 @@ impl Database {
 
         Ok(transactions)
     }
+
+    pub fn count(&mut self) -> MyResult<usize> {
+        unimplemented!()
+    }
+
+    pub fn last_row(&mut self) -> MyResult<Transaction> {
+        unimplemented!()
+    }
 }
 
 impl TryFrom<&Row<'_>> for TransactionDbRow {
@@ -138,6 +147,32 @@ impl TryFrom<&Row<'_>> for TransactionDbRow {
             category: value.get(3)?,
             description: value.get(4)?,
             bank: value.get(5)?,
+        })
+    }
+}
+
+pub struct TransactionDbRow {
+    pub id: i64,
+    pub date: String,
+    pub amount: String,
+    pub category: String,
+    pub description: String,
+    pub bank: String,
+}
+
+impl TryFrom<TransactionDbRow> for Transaction {
+    type Error = String;
+
+    fn try_from(value: TransactionDbRow) -> Result<Self, Self::Error> {
+        let amount = rust_decimal::Decimal::from_str(&value.amount).map_err(|e| format!("{e}"))?;
+        let date = NaiveDate::from_str(&value.date).map_err(|e| format!("{e}"))?;
+
+        Ok(Self {
+            date,
+            amount: amount,
+            category: value.category,
+            description: value.description,
+            bank: value.bank,
         })
     }
 }

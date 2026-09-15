@@ -1,14 +1,6 @@
 use rust_decimal::Decimal;
 
-use crate::{
-    cli::TimePeriod,
-    commands::list::format_decimal,
-    models::{
-        report::{Amount, Report},
-        Direction,
-    },
-    MyResult, State,
-};
+use crate::{cli::TimePeriod, commands::list::format_decimal, models::Report, MyResult, State};
 
 pub fn report(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> {
     match time_period {
@@ -57,47 +49,32 @@ fn print_report(report: &Report) {
         format_decimal(report.total_inflow - report.total_outflow)
     );
 
-    let mut inflow_categories: Vec<(&String, &Amount)> = report
-        .categories_total_flow
-        .iter()
-        .filter(|cat| cat.1.direction == Direction::Inflow)
-        .map(|cat| (cat.0, cat.1))
-        .collect();
+    let mut categories: Vec<(&String, &Decimal)> = report.categories_total_flow.iter().collect();
 
-    let mut outflow_categories: Vec<(&String, &Amount)> = report
-        .categories_total_flow
-        .iter()
-        .filter(|cat| cat.1.direction == Direction::Outflow)
-        .map(|cat| (cat.0, cat.1))
-        .collect();
+    // let mut outflow_categories: Vec<(&String, &Decimal)> = report
+    //     .categories_total_flow
+    //     .iter()
+    //     .filter(|cat| *cat.1 < Decimal::ZERO)
+    //     .collect();
 
-    // categories.sort_by(|a, b| a.1.direction.cmp(b.1.direction));
-    inflow_categories.sort_by(|a, b| b.1.value.cmp(&a.1.value));
-    outflow_categories.sort_by(|a, b| b.1.value.cmp(&a.1.value));
+    categories.sort_by(|a, b| a.1.cmp(b.1));
+    // inflow_categories.sort_by(|a, b| b.1.value.cmp(&a.1.value));
+    // outflow_categories.sort_by(|a, b| b.1.value.cmp(&a.1.value));
 
-    for cat in inflow_categories {
-        println!(
-            "  {}: {}{}",
-            cat.0,
-            if cat.1.direction == Direction::Outflow {
-                "-"
-            } else {
-                ""
-            },
-            cat.1.value
-        );
+    for cat in categories {
+        println!("  {}: {}", cat.0, cat.1);
     }
-    println!();
-    for cat in outflow_categories {
-        println!(
-            "  {}: {}{}",
-            cat.0,
-            if cat.1.direction == Direction::Outflow {
-                "-"
-            } else {
-                ""
-            },
-            cat.1.value
-        );
-    }
+    // println!();
+    // for cat in outflow_categories {
+    //     println!(
+    //         "  {}: {}{}",
+    //         cat.0,
+    //         if cat.1.direction == Direction::Outflow {
+    //             "-"
+    //         } else {
+    //             ""
+    //         },
+    //         cat.1.value
+    //     );
+    // }
 }

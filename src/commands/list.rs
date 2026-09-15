@@ -1,4 +1,4 @@
-use chrono::{Datelike, Days, Local, Months, NaiveDate, Weekday};
+use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
 use rust_decimal::Decimal;
 
 use crate::{cli::TimePeriod, models::Transaction, MyResult, State};
@@ -52,17 +52,23 @@ fn print_transactions(transactions: Vec<Transaction>) {
     let mut total_out = Decimal::from(0);
 
     for transaction in transactions {
-        match transaction.direction {
-            crate::models::Direction::Inflow => total_in += transaction.amount,
-            crate::models::Direction::Outflow => total_out += transaction.amount,
-            _ => {}
+        let direction;
+
+        if transaction.amount > Decimal::ZERO {
+            total_in += transaction.amount;
+            direction = "Inflow";
+        } else if transaction.amount < Decimal::ZERO {
+            total_out += transaction.amount;
+            direction = "Outflow";
+        } else {
+            continue;
         }
 
         println!(
             "{} | {:>15} | {:>10} | {:>amount_width$.2} | {:>category_width$} | {}",
             transaction.date,
             transaction.bank,
-            transaction.direction,
+            direction,
             transaction.amount,
             transaction.category,
             transaction.description
@@ -72,8 +78,8 @@ fn print_transactions(transactions: Vec<Transaction>) {
     println!(
         "\nTotal In:  ${}\nTotal Out: ${} \nRemaining: ${}",
         format_decimal(total_in),
-        format_decimal(total_out),
-        format_decimal(total_in - total_out)
+        format_decimal(total_out.abs()),
+        format_decimal(total_in - total_out.abs())
     );
 }
 
