@@ -52,7 +52,7 @@ Only new dependency: `ratatui = "0.30"` (re-exports crossterm).
 Existing `tests/cli.rs` must keep passing throughout.
 
 - [x] `MyResult<T>` → `anyhow::Result<T>`
-- [ ] Move `State` to `state.rs`; lazy-load db/config per command
+- [x] Move `State` to `state.rs`; lazy-load db/config per command
 - [ ] `Transaction` gains `id: i64`; add `NewTransaction` for inserts; drop `TransactionDbRow` from public surface
 - [ ] `models/period.rs`: move `get_dates` out of `list.rs` as `DateRange`, return `NaiveDate`; `Database::list_transactions` takes `NaiveDate`
 - [ ] Wire `DateRange` into `list` and `report` (remove hard-coded `2026-08-01..2026-09-01`)

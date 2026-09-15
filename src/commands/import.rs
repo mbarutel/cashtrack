@@ -3,7 +3,7 @@ use std::{path::Path, time::Instant};
 
 use crate::{
     config::Category,
-    models::{Bank, Transaction},
+    models::{Bank, NewTransaction},
     State,
 };
 
@@ -29,20 +29,22 @@ pub fn import(state: &mut State, path: &Path, bank: Bank) -> Result<()> {
     Ok(())
 }
 
-fn read_transactions(rules: &Vec<Category>, path: &Path, bank: Bank) -> Result<Vec<Transaction>> {
+fn read_transactions(
+    rules: &Vec<Category>,
+    path: &Path,
+    bank: Bank,
+) -> Result<Vec<NewTransaction>> {
     Ok(bank
         .parse(path)?
         .into_iter()
         .map(|row| {
-            let transaction = Transaction {
+            let transaction = NewTransaction {
                 date: row.date,
                 amount: row.amount,
                 category: categorizer(rules, &row.description),
                 description: row.description,
                 bank: bank.to_string(),
             };
-
-            println!("{:#?}", transaction);
 
             transaction
         })
@@ -69,7 +71,7 @@ fn categorizer(categories: &Vec<Category>, description: &String) -> String {
     result
 }
 
-fn sort_by_date(transactions: &mut Vec<Transaction>) {
+fn sort_by_date(transactions: &mut Vec<NewTransaction>) {
     transactions.sort_by(|a, b| a.date.cmp(&b.date));
 }
 

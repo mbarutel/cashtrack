@@ -5,4 +5,4 @@ pub mod transaction;
 
 pub use import::Bank;
 pub use report::Report;
-pub use transaction::Transaction;
+pub use transaction::{NewTransaction, Transaction};

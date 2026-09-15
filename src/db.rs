@@ -1,7 +1,8 @@
 use anyhow::{Context, Result};
+use rust_decimal::Decimal;
 use std::{path::PathBuf, str::FromStr};
 
-use crate::models::Transaction;
+use crate::models::{transaction::NewTransaction, Transaction};
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Row};
 
@@ -41,7 +42,7 @@ impl Database {
         Ok(())
     }
 
-    pub fn insert_transactions(&mut self, transactions: &[Transaction]) -> Result<usize> {
+    pub fn insert_transactions(&mut self, transactions: &[NewTransaction]) -> Result<usize> {
         let tx = self.conn.transaction()?;
         let mut inserted = 0;
 
@@ -53,6 +54,7 @@ impl Database {
             )?;
 
             for t in transactions {
+                println!("{:?}", t);
                 inserted += stmt.execute(params![
                     t.date,
                     t.amount.to_string(),
@@ -86,12 +88,11 @@ impl Database {
             DESC",
         )?;
 
-        let rows = stmt.query_map(params![from, to], |row| TransactionDbRow::try_from(row))?;
-
+        let mut rows = stmt.query(params![from, to])?;
         let mut transactions = Vec::new();
 
-        for row in rows {
-            transactions.push(Transaction::try_from(row?)?);
+        while let Some(row) = rows.next()? {
+            transactions.push(Transaction::try_from(row)?);
         }
 
         Ok(transactions)
@@ -113,12 +114,11 @@ impl Database {
             DESC",
         )?;
 
-        let rows = stmt.query_map([], |row| TransactionDbRow::try_from(row))?;
-
+        let mut rows = stmt.query([])?;
         let mut transactions = Vec::new();
 
-        for row in rows {
-            transactions.push(Transaction::try_from(row?)?);
+        while let Some(row) = rows.next()? {
+            transactions.push(Transaction::try_from(row)?);
         }
 
         Ok(transactions)
@@ -139,43 +139,20 @@ impl Database {
     }
 }
 
-impl TryFrom<&Row<'_>> for TransactionDbRow {
-    type Error = rusqlite::Error;
+impl TryFrom<&Row<'_>> for Transaction {
+    type Error = anyhow::Error;
 
     fn try_from(value: &Row) -> Result<Self, Self::Error> {
+        let date = value.get::<_, String>(1)?;
+        let amount = value.get::<_, String>(2)?;
+
         Ok(Self {
             id: value.get(0)?,
-            date: value.get(1)?,
-            amount: value.get(2)?,
+            date: NaiveDate::from_str(&date)?,
+            amount: Decimal::from_str(&amount)?,
             category: value.get(3)?,
             description: value.get(4)?,
             bank: value.get(5)?,
-        })
-    }
-}
-
-pub struct TransactionDbRow {
-    pub id: i64,
-    pub date: String,
-    pub amount: String,
-    pub category: String,
-    pub description: String,
-    pub bank: String,
-}
-
-impl TryFrom<TransactionDbRow> for Transaction {
-    type Error = anyhow::Error;
-
-    fn try_from(value: TransactionDbRow) -> Result<Self> {
-        let amount = rust_decimal::Decimal::from_str(&value.amount)?;
-        let date = NaiveDate::from_str(&value.date)?;
-
-        Ok(Self {
-            date,
-            amount: amount,
-            category: value.category,
-            description: value.description,
-            bank: value.bank,
         })
     }
 }
