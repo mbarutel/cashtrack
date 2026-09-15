@@ -4,4 +4,4 @@ pub mod transaction;
 
 pub use import::Bank;
 pub use report::Report;
-pub use transaction::{Transaction, TransactionDbRow};
+pub use transaction::Transaction;

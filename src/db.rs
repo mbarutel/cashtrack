@@ -1,9 +1,6 @@
 use std::{path::PathBuf, str::FromStr};
 
-use crate::{
-    models::{Transaction, TransactionDbRow},
-    MyResult,
-};
+use crate::{models::Transaction, MyResult};
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Row};
 
@@ -128,10 +125,16 @@ impl Database {
     }
 
     pub fn count(&mut self) -> MyResult<usize> {
-        unimplemented!()
+        let mut stmt = self.conn.prepare("SELECT COUNT(*) FROM transactions")?;
+
+        let count: i64 = stmt.query_row([], |row| row.get(0))?;
+
+        Ok(count as usize)
     }
 
     pub fn last_row(&mut self) -> MyResult<Transaction> {
+        // Do we want the latest row inserted, latest row based on date?
+        // And do we consider bank?
         unimplemented!()
     }
 }
