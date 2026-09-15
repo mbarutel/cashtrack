@@ -1,9 +1,10 @@
+use anyhow::Result;
 use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
 use rust_decimal::Decimal;
 
-use crate::{cli::TimePeriod, models::Transaction, MyResult, State};
+use crate::{cli::TimePeriod, models::Transaction, State};
 
-pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> {
+pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> Result<()> {
     match time_period {
         Some(time_period) => {
             match time_period {

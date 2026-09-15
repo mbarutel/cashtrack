@@ -1,8 +1,9 @@
+use anyhow::Result;
 use rust_decimal::Decimal;
 
-use crate::{cli::TimePeriod, commands::list::format_decimal, models::Report, MyResult, State};
+use crate::{cli::TimePeriod, commands::list::format_decimal, models::Report, State};
 
-pub fn report(state: &mut State, time_period: Option<TimePeriod>) -> MyResult<()> {
+pub fn report(state: &mut State, time_period: Option<TimePeriod>) -> Result<()> {
     match time_period {
         Some(time_period) => {
             match time_period {

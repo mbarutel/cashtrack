@@ -4,6 +4,7 @@ mod config;
 mod db;
 mod models;
 
+use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Command};
 use config::Config;
@@ -11,14 +12,14 @@ use db::Database;
 use etcetera::{AppStrategy, AppStrategyArgs};
 use std::path::PathBuf;
 
-type MyResult<T> = Result<T, Box<dyn std::error::Error>>;
+// type MyResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 pub struct State {
     db: Database,
     config: Config,
 }
 
-fn strategy() -> MyResult<impl AppStrategy> {
+fn strategy() -> Result<impl AppStrategy> {
     Ok(etcetera::choose_app_strategy(AppStrategyArgs {
         top_level_domain: String::new(),
         author: String::new(),
@@ -27,7 +28,7 @@ fn strategy() -> MyResult<impl AppStrategy> {
 }
 
 impl State {
-    fn new() -> MyResult<Self> {
+    fn new() -> Result<Self> {
         let strategy = strategy()?;
 
         let config_path = std::env::var_os("CASHTRACK_CONFIG")
@@ -45,7 +46,7 @@ impl State {
     }
 }
 
-pub fn run() -> MyResult<()> {
+pub fn run() -> Result<()> {
     let cli = Cli::try_parse()?;
     let mut state = State::new()?;
 

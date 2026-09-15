@@ -1,11 +1,10 @@
 use core::fmt;
 use std::path::Path;
 
+use anyhow::{Context, Result};
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use serde::Deserialize;
-
-use crate::MyResult;
 
 #[derive(Clone, Copy, clap::ValueEnum)]
 pub enum Bank {
@@ -14,7 +13,7 @@ pub enum Bank {
 }
 
 impl Bank {
-    pub fn parse(self, path: &Path) -> MyResult<Vec<ParsedRow>> {
+    pub fn parse(self, path: &Path) -> Result<Vec<ParsedRow>> {
         let has_headers = match self {
             Self::Commonwealth => false,
             Self::Westpac => true,
@@ -24,7 +23,7 @@ impl Bank {
             .has_headers(has_headers)
             .trim(csv::Trim::All)
             .from_path(path)
-            .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
+            .with_context(|| format!("failed to read {}", path.display()))?;
 
         let mut rows = Vec::new();
 

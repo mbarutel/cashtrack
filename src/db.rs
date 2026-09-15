@@ -1,6 +1,7 @@
+use anyhow::{Context, Result};
 use std::{path::PathBuf, str::FromStr};
 
-use crate::{models::Transaction, MyResult};
+use crate::models::Transaction;
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Row};
 
@@ -9,7 +10,7 @@ pub struct Database {
 }
 
 impl Database {
-    pub fn new(path: PathBuf) -> MyResult<Database> {
+    pub fn new(path: PathBuf) -> Result<Database> {
         Database::prepare_path(&path)?;
         let conn = Connection::open(path)?;
 
@@ -28,20 +29,19 @@ impl Database {
         Ok(Database { conn })
     }
 
-    fn prepare_path(path: &PathBuf) -> MyResult<()> {
+    fn prepare_path(path: &PathBuf) -> Result<()> {
         let parent = path
             .parent()
             .expect("Database cannot be located at root level");
 
         if !parent.is_dir() {
-            std::fs::create_dir_all(parent)
-                .map_err(|err| format!("{}: {}", parent.display(), err))?
+            std::fs::create_dir_all(parent).with_context(|| format!("{}", parent.display()))?
         }
 
         Ok(())
     }
 
-    pub fn insert_transactions(&mut self, transactions: &[Transaction]) -> MyResult<usize> {
+    pub fn insert_transactions(&mut self, transactions: &[Transaction]) -> Result<usize> {
         let tx = self.conn.transaction()?;
         let mut inserted = 0;
 
@@ -68,7 +68,7 @@ impl Database {
         Ok(inserted)
     }
 
-    pub fn list_transactions(&mut self, from: &str, to: &str) -> MyResult<Vec<Transaction>> {
+    pub fn list_transactions(&mut self, from: &str, to: &str) -> Result<Vec<Transaction>> {
         let mut stmt = self.conn.prepare(
             "SELECT
                 id,
@@ -97,7 +97,7 @@ impl Database {
         Ok(transactions)
     }
 
-    pub fn list_all_transactions(&mut self) -> MyResult<Vec<Transaction>> {
+    pub fn list_all_transactions(&mut self) -> Result<Vec<Transaction>> {
         let mut stmt = self.conn.prepare(
             "SELECT
                 id,
@@ -124,7 +124,7 @@ impl Database {
         Ok(transactions)
     }
 
-    pub fn count(&mut self) -> MyResult<usize> {
+    pub fn count(&mut self) -> Result<usize> {
         let mut stmt = self.conn.prepare("SELECT COUNT(*) FROM transactions")?;
 
         let count: i64 = stmt.query_row([], |row| row.get(0))?;
@@ -132,7 +132,7 @@ impl Database {
         Ok(count as usize)
     }
 
-    pub fn last_row(&mut self) -> MyResult<Transaction> {
+    pub fn last_row(&mut self) -> Result<Transaction> {
         // Do we want the latest row inserted, latest row based on date?
         // And do we consider bank?
         unimplemented!()
@@ -164,11 +164,11 @@ pub struct TransactionDbRow {
 }
 
 impl TryFrom<TransactionDbRow> for Transaction {
-    type Error = String;
+    type Error = anyhow::Error;
 
-    fn try_from(value: TransactionDbRow) -> Result<Self, Self::Error> {
-        let amount = rust_decimal::Decimal::from_str(&value.amount).map_err(|e| format!("{e}"))?;
-        let date = NaiveDate::from_str(&value.date).map_err(|e| format!("{e}"))?;
+    fn try_from(value: TransactionDbRow) -> Result<Self> {
+        let amount = rust_decimal::Decimal::from_str(&value.amount)?;
+        let date = NaiveDate::from_str(&value.date)?;
 
         Ok(Self {
             date,

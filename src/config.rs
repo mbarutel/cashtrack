@@ -1,4 +1,4 @@
-use crate::MyResult;
+use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::{io::ErrorKind, path::PathBuf};
 
@@ -21,25 +21,25 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(file_path: PathBuf) -> MyResult<Config> {
+    pub fn new(file_path: PathBuf) -> Result<Config> {
         let contents = match std::fs::read_to_string(&file_path) {
             Ok(contents) => contents,
             Err(err) if err.kind() == ErrorKind::NotFound => {
                 if let Some(parent) = file_path.parent() {
                     std::fs::create_dir_all(parent)
-                        .map_err(|err| format!("{}: {}", parent.display(), err))?;
+                        .with_context(|| format!("{}", parent.display()))?;
                 }
 
                 std::fs::write(&file_path, DEFAULT_CONFIG)
-                    .map_err(|err| format!("{}: {}", file_path.display(), err))?;
+                    .with_context(|| format!("{}", file_path.display()))?;
 
                 DEFAULT_CONFIG.to_string()
             }
-            Err(err) => return Err(format!("{}: {}", file_path.display(), err).into()),
+            Err(err) => return Err(err).with_context(|| format!("{}", file_path.display())),
         };
 
-        let config = serde_yaml::from_str(&contents)
-            .map_err(|err| format!("{}: {}", file_path.display(), err))?;
+        let config =
+            serde_yaml::from_str(&contents).with_context(|| format!("{}", file_path.display()))?;
 
         Ok(config)
     }

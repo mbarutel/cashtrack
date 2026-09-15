@@ -1,9 +1,10 @@
+use anyhow::Result;
 use std::{path::Path, time::Instant};
 
 use crate::{
     config::Category,
     models::{Bank, Transaction},
-    MyResult, State,
+    State,
 };
 
 // TODO: This can be done in batches eventually.
@@ -11,7 +12,7 @@ use crate::{
 // Generate the Transaction Object
 // Insert into Database
 
-pub fn import(state: &mut State, path: &Path, bank: Bank) -> MyResult<()> {
+pub fn import(state: &mut State, path: &Path, bank: Bank) -> Result<()> {
     let start = Instant::now();
 
     let mut transactions = read_transactions(state.config.categories(), path, bank)?;
@@ -28,7 +29,7 @@ pub fn import(state: &mut State, path: &Path, bank: Bank) -> MyResult<()> {
     Ok(())
 }
 
-fn read_transactions(rules: &Vec<Category>, path: &Path, bank: Bank) -> MyResult<Vec<Transaction>> {
+fn read_transactions(rules: &Vec<Category>, path: &Path, bank: Bank) -> Result<Vec<Transaction>> {
     Ok(bank
         .parse(path)?
         .into_iter()
