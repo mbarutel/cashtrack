@@ -1,23 +1,21 @@
 use anyhow::Result;
+use chrono::Local;
 use rust_decimal::Decimal;
 
-use crate::{cli::TimePeriod, commands::list::format_decimal, models::Report, State};
+use crate::{
+    commands::list::format_decimal,
+    models::{Report, TimePeriod},
+    State,
+};
 
 pub fn report(state: &mut State, time_period: Option<TimePeriod>) -> Result<()> {
     match time_period {
         Some(time_period) => {
-            match time_period {
-                TimePeriod::Weekly => println!("Weekly\n"),
-                TimePeriod::Fortnightly => println!("Fortnightly\n"),
-                TimePeriod::Monthly => println!("Monthly\n"),
-                TimePeriod::Yearly => println!("Yearly\n"),
-            };
+            let date_range = time_period.range_containing(Local::now().date_naive());
 
-            // let (start_date, end_date) = get_dates(Local::now().date_naive(), time_period);
-            let start_date = "2026-08-01";
-            let end_date = "2026-09-01";
-
-            let transactions = state.db.list_transactions(&start_date, &end_date)?;
+            let transactions = state
+                .db
+                .list_transactions(&date_range.start, &date_range.end)?;
 
             let report = Report::new(transactions);
 

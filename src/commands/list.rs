@@ -1,24 +1,20 @@
 use anyhow::Result;
-use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
+use chrono::{Datelike, Days, Local, Months, NaiveDate, Weekday};
 use rust_decimal::Decimal;
 
-use crate::{cli::TimePeriod, models::Transaction, State};
+use crate::{
+    models::{TimePeriod, Transaction},
+    State,
+};
 
 pub fn list(state: &mut State, time_period: Option<TimePeriod>) -> Result<()> {
     match time_period {
         Some(time_period) => {
-            match time_period {
-                TimePeriod::Weekly => println!("Weekly\n"),
-                TimePeriod::Fortnightly => println!("Fortnightly\n"),
-                TimePeriod::Monthly => println!("Monthly\n"),
-                TimePeriod::Yearly => println!("Yearly\n"),
-            };
+            let date_range = time_period.range_containing(Local::now().date_naive());
 
-            // let (start_date, end_date) = get_dates(Local::now().date_naive(), time_period);
-            let start_date = "2026-08-01";
-            let end_date = "2026-09-01";
-
-            let transactions = state.db.list_transactions(&start_date, &end_date)?;
+            let transactions = state
+                .db
+                .list_transactions(&date_range.start, &date_range.end)?;
 
             if transactions.is_empty() {
                 println!("No transactions to print!");
@@ -79,31 +75,6 @@ fn print_transactions(transactions: Vec<Transaction>) {
     );
 }
 
-fn get_dates(today: NaiveDate, time_period: TimePeriod) -> (String, String) {
-    let week = today.week(Weekday::Mon);
-
-    let (start, end) = match time_period {
-        TimePeriod::Weekly => (week.first_day(), week.last_day()),
-        TimePeriod::Fortnightly => (
-            week.first_day() - Days::new(7), // Monday of the previous week
-            week.last_day(),
-        ),
-        TimePeriod::Monthly => {
-            let start = today.with_day(1).expect("day 1 is valid for any month");
-            let end = start + Months::new(1) - Days::new(1); // last day of this month
-            (start, end)
-        }
-        TimePeriod::Yearly => (
-            NaiveDate::from_ymd_opt(today.year(), 1, 1).expect("Jan 1 is always valid"),
-            NaiveDate::from_ymd_opt(today.year(), 12, 31).expect("Dec 31 is always valid"),
-        ),
-    };
-
-    let format_date = |date: NaiveDate| date.format("%Y-%m-%d").to_string();
-
-    (format_date(start), format_date(end))
-}
-
 pub fn format_decimal(amount: Decimal) -> String {
     let s = amount.round_dp(2).to_string();
     let (num, frac) = s.split_once('.').unwrap_or((s.as_str(), "00"));
@@ -118,58 +89,4 @@ pub fn format_decimal(amount: Decimal) -> String {
     }
 
     format!("{sign}{out}.{frac:0<2}")
-}
-
-#[cfg(test)]
-mod tests {
-    use chrono::NaiveDate;
-
-    use super::*;
-
-    const FORMAT: &str = "%Y/%m/%d";
-    const MOCK_TODAY: &str = "2026/08/05"; // Wed, 05 Aug 2026
-
-    #[test]
-    fn weekly() {
-        let mock_today = NaiveDate::parse_from_str(MOCK_TODAY, FORMAT)
-            .expect("Cannot parse date for weekly test");
-
-        let (start_date, end_date) = get_dates(mock_today, TimePeriod::Weekly);
-
-        assert_eq!(start_date, "2026/08/03");
-        assert_eq!(end_date, "2026/08/09");
-    }
-
-    #[test]
-    fn fortnightly() {
-        let mock_today = NaiveDate::parse_from_str(MOCK_TODAY, FORMAT)
-            .expect("Cannot parse date for fornightly test");
-
-        let (start_date, end_date) = get_dates(mock_today, TimePeriod::Fortnightly);
-
-        assert_eq!(start_date, "2026/07/27");
-        assert_eq!(end_date, "2026/08/09");
-    }
-
-    #[test]
-    fn monthly() {
-        let mock_today = NaiveDate::parse_from_str(MOCK_TODAY, FORMAT)
-            .expect("Cannot parse date for monthly test");
-
-        let (start_date, end_date) = get_dates(mock_today, TimePeriod::Monthly);
-
-        assert_eq!(start_date, "2026/08/01");
-        assert_eq!(end_date, "2026/08/31");
-    }
-
-    #[test]
-    fn yearly() {
-        let mock_today = NaiveDate::parse_from_str(MOCK_TODAY, FORMAT)
-            .expect("Cannot parse date for yearly test");
-
-        let (start_date, end_date) = get_dates(mock_today, TimePeriod::Yearly);
-
-        assert_eq!(start_date, "2026/01/01");
-        assert_eq!(end_date, "2026/12/31");
-    }
 }

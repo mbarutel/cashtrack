@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
-use crate::models::Bank;
+use crate::models::{Bank, TimePeriod};
 
 #[derive(Parser)]
 pub struct Cli {
@@ -26,12 +26,4 @@ pub enum Command {
         #[arg(short, long, value_enum)]
         bank: Bank,
     },
-}
-
-#[derive(Subcommand)]
-pub enum TimePeriod {
-    Weekly,
-    Fortnightly,
-    Monthly,
-    Yearly,
 }

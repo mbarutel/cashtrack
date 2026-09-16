@@ -70,7 +70,11 @@ impl Database {
         Ok(inserted)
     }
 
-    pub fn list_transactions(&mut self, from: &str, to: &str) -> Result<Vec<Transaction>> {
+    pub fn list_transactions(
+        &mut self,
+        from: &NaiveDate,
+        to: &NaiveDate,
+    ) -> Result<Vec<Transaction>> {
         let mut stmt = self.conn.prepare(
             "SELECT
                 id,
