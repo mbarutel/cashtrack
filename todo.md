@@ -55,7 +55,7 @@ Existing `tests/cli.rs` must keep passing throughout.
 - [x] Move `State` to `state.rs`; lazy-load db/config per command
 - [x] `Transaction` gains `id: i64`; add `NewTransaction` for inserts; drop `TransactionDbRow` from public surface
 - [x] `models/period.rs`: move `get_dates` out of `list.rs` as `DateRange`, return `NaiveDate`; `Database::list_transactions` takes `NaiveDate`
-- [ ] Wire `DateRange` into `list` and `report` (remove hard-coded `2026-08-01..2026-09-01`)
+- [x] Wire `DateRange` into `list` and `report` (remove hard-coded `2026-08-01..2026-09-01`)
 - [ ] `services/`: extract data-fetching from `commands/*`; `import` returns `ImportSummary` instead of printing every row
 - [ ] `cli/text.rs`: move `print_transactions`, `print_report`, `format_decimal`
 - [ ] Move `categorizer` to `services/categorizer.rs` and re-enable its unit tests

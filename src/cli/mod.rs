@@ -1,8 +1,10 @@
-use std::path::PathBuf;
-
-use clap::{Parser, Subcommand};
+mod command;
+mod text;
 
 use crate::models::{Bank, TimePeriod};
+use clap::{Parser, Subcommand};
+pub use command::{import, list, report};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 pub struct Cli {

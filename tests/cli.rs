@@ -36,6 +36,8 @@ fn import_then_list() {
             "import",
             "--csv-path",
             "tests/fixtures/test_transactions_export.csv",
+            "--bank",
+            "commonwealth",
         ])
         .assert()
         .success();

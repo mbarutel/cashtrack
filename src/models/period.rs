@@ -197,6 +197,6 @@ mod tests {
     #[test]
     fn display() {
         let r = TimePeriod::Monthly.range_containing(today());
-        assert_eq!(r.to_string(), "01 Aug 2026 – 31 Aug 2026");
+        assert_eq!(r.to_string(), "01 Aug 2026 - 31 Aug 2026");
     }
 }

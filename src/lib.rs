@@ -1,8 +1,8 @@
 mod cli;
-mod commands;
 mod config;
 mod db;
 mod models;
+mod services;
 mod state;
 
 use anyhow::Result;
@@ -16,9 +16,9 @@ pub fn run() -> Result<()> {
     let mut state = State::new()?;
 
     match cli.command {
-        Command::Report { time_period } => commands::report(&mut state, time_period)?,
-        Command::List { time_period } => commands::list(&mut state, time_period)?,
-        Command::Import { csv_path, bank } => commands::import(&mut state, &csv_path, bank)?,
+        Command::Report { time_period } => cli::report(&mut state, time_period)?,
+        Command::List { time_period } => cli::list(&mut state, time_period)?,
+        Command::Import { csv_path, bank } => cli::import(&mut state, &csv_path, bank)?,
     }
 
     Ok(())
