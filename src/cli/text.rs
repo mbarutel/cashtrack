@@ -26,12 +26,12 @@ pub fn print_report(report: &Report) {
     println!("Outflow {}", format_decimal(report.total_outflow));
     println!(
         "Balance {}",
-        format_decimal(report.total_inflow - report.total_outflow)
+        format_decimal(report.total_inflow + report.total_outflow)
     );
 
     let mut categories: Vec<(&String, &Decimal)> = report.categories_total_flow.iter().collect();
 
-    categories.sort_by(|a, b| a.1.cmp(b.1));
+    categories.sort_by(|a, b| b.1.cmp(a.1));
 
     for cat in categories {
         println!("  {}: {}", cat.0, cat.1);

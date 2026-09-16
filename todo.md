@@ -56,9 +56,14 @@ Existing `tests/cli.rs` must keep passing throughout.
 - [x] `Transaction` gains `id: i64`; add `NewTransaction` for inserts; drop `TransactionDbRow` from public surface
 - [x] `models/period.rs`: move `get_dates` out of `list.rs` as `DateRange`, return `NaiveDate`; `Database::list_transactions` takes `NaiveDate`
 - [x] Wire `DateRange` into `list` and `report` (remove hard-coded `2026-08-01..2026-09-01`)
-- [ ] `services/`: extract data-fetching from `commands/*`; `import` returns `ImportSummary` instead of printing every row
-- [ ] `cli/text.rs`: move `print_transactions`, `print_report`, `format_decimal`
-- [ ] Move `categorizer` to `services/categorizer.rs` and re-enable its unit tests
+- [x] `services/`: extract data-fetching from `commands/*`; `import` returns `ImportSummary` instead of printing every row
+- [x] `cli/text.rs`: move `print_transactions`, `print_report`, `format_decimal`
+- [x] Move `categorizer` to `services/categorizer.rs` and re-enable its unit tests
+
+Bugs found in review (pre-existing, fix any time):
+
+- [ ] `Report::new` seeds dates from `iter.next()` and never counts that first transaction in totals/categories
+- [ ] `print_report` Balance is `inflow - outflow` but `total_outflow` is negative → adds instead of subtracts; use `inflow + outflow`
 
 ## Phase 1 — thin end-to-end slice
 
