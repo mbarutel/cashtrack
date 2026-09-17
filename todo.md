@@ -1,3 +1,5 @@
+amp threads continue T-01a0a342-c5e6-75fb-8014-80029c529bfa
+
 # cashtrack → ratatui
 
 Two front-ends (CLI, TUI) over one core. Nothing below the presentation
