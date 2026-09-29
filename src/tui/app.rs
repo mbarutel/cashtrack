@@ -37,4 +37,20 @@ impl App {
             should_quit: false,
         })
     }
+
+    pub fn set_range(&mut self, state: &mut State, range: Option<DateRange>) -> Result<()> {
+        self.range = range;
+        self.rows = services::transactions(state, range)?;
+        self.table = TableState::default();
+        if !self.rows.is_empty() {
+            self.table.select(Some(0));
+        }
+        Ok(())
+    }
+
+    pub fn set_period(&mut self, state: &mut State, period: TimePeriod) -> Result<()> {
+        let anchor = self.range.map_or(self.today, |r| r.start);
+        self.period = period;
+        self.set_range(state, Some(period.range_containing(anchor)))
+    }
 }
