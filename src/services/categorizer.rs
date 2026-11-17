@@ -1,7 +1,7 @@
-use crate::config::Category;
+use crate::{config::Category, models::UNCATEGORISED};
 
 pub fn categorizer(categories: &Vec<Category>, description: &str) -> String {
-    let mut result = "Unknown".to_string();
+    let mut result = UNCATEGORISED.to_string();
     let mut last_prio_level = 0;
 
     for category in categories {

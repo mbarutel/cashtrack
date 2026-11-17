@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 
 use crate::{
-    models::{Report, Transaction},
+    models::{format_decimal, Report, Transaction},
     services::ImportSummary,
 };
 
@@ -78,20 +78,4 @@ pub fn print_transactions(transactions: Vec<Transaction>) {
         format_decimal(total_out.abs()),
         format_decimal(total_in - total_out.abs())
     );
-}
-
-pub fn format_decimal(amount: Decimal) -> String {
-    let s = amount.round_dp(2).to_string();
-    let (num, frac) = s.split_once('.').unwrap_or((s.as_str(), "00"));
-    let (sign, int) = num.strip_prefix('-').map_or(("", num), |i| ("-", i));
-
-    let mut out = String::new();
-    for (i, c) in int.chars().enumerate() {
-        if i > 0 && (int.len() - i) % 3 == 0 {
-            out.push(',');
-        }
-        out.push(c);
-    }
-
-    format!("{sign}{out}.{frac:0<2}")
 }

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use serde::Deserialize;
-use std::{io::ErrorKind, path::PathBuf};
+use std::{collections::HashSet, io::ErrorKind, path::PathBuf};
 
 const DEFAULT_CONFIG: &str = "\
 # cashtrack category rules
@@ -47,6 +47,14 @@ impl Config {
     pub fn categories(&self) -> &Vec<Category> {
         &self.categories
     }
+
+    pub fn transfer_categories(&self) -> HashSet<String> {
+        self.categories
+            .iter()
+            .filter(|c| c.is_transfer())
+            .map(|c| c.title().to_string())
+            .collect()
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,6 +62,8 @@ pub struct Category {
     title: String,
     keywords: Vec<String>,
     priority: u32,
+    #[serde(default)]
+    transfer: bool,
 }
 
 impl Category {
@@ -67,5 +77,9 @@ impl Category {
 
     pub fn priority(&self) -> u32 {
         self.priority
+    }
+
+    pub fn is_transfer(&self) -> bool {
+        self.transfer
     }
 }

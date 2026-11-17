@@ -1,6 +1,8 @@
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 
+pub const UNCATEGORISED: &str = "Unknown";
+
 #[derive(Debug)]
 pub struct NewTransaction {
     pub date: NaiveDate,
@@ -10,7 +12,7 @@ pub struct NewTransaction {
     pub bank: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Transaction {
     pub id: i64,
     pub date: NaiveDate,
